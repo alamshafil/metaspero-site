@@ -5,7 +5,8 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://kyty-apple.shafilalam.com',
+  site: 'https://alamshafil.github.io',
+  base: '/metaspero-site',
   integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()],

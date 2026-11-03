@@ -9,9 +9,9 @@ const currentPath = Astro.url.pathname;
 <header class="sticky top-0 z-50 bg-page/85 backdrop-blur-lg border-b border-zinc-200" id="top">
   <div class="max-w-[1100px] mx-auto px-6 h-16 flex items-center justify-between">
     <div class="flex items-center gap-2.5">
-      <a href="/" class="flex items-center gap-2 font-semibold text-sm text-zinc-900 transition-opacity hover:opacity-80">
+      <a href="/metaspero-site/" class="flex items-center gap-2 font-semibold text-sm text-zinc-900 transition-opacity hover:opacity-80">
         <img
-          src="/app-icon.png"
+          src="/metaspero-site/app-icon.png"
           alt=""
           width="24"
           height="24"
@@ -28,7 +28,7 @@ const currentPath = Astro.url.pathname;
 
     <nav class="hidden md:flex items-center gap-6" aria-label="Main navigation">
       {SITE_CONFIG.nav.map((link) => {
-        const isActive = currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href));
+        const isActive = currentPath === link.href || (link.href !== '/metaspero-site/' && currentPath.startsWith(link.href));
         return (
           <a
             href={link.href}
