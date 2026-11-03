@@ -1,0 +1,112 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import CompatibilitySearch from '../../components/CompatibilitySearch.astro';
+import { STATUS_DEFINITIONS, type CompatibilityStatus } from '../../types/compatibility';
+import { SITE_CONFIG } from '../../config/site';
+import { getCollection } from 'astro:content';
+
+const allReports = await getCollection('compatibility');
+const totalReports = allReports.length;
+
+const statuses: CompatibilityStatus[] = ['In game', 'Main menu', 'Logo', "Doesn't boot"];
+
+const statusCounts = statuses.reduce((acc, st) => {
+  acc[st] = allReports.filter((r) => r.data.status === st).length;
+  return acc;
+}, {} as Record<CompatibilityStatus, number>);
+---
+
+<Layout
+  title={`Game Compatibility - ${SITE_CONFIG.name}`}
+  description="Tested game compatibility reports for PS5 titles running on iOS and macOS."
+>
+  <Nav />
+
+  <main class="max-w-[1100px] mx-auto px-6 py-12 sm:py-16 space-y-12">
+    <!-- Header & Glance -->
+    <div class="space-y-6 pb-6 border-b border-zinc-100">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+            Compatibility Database
+          </h1>
+          <p class="text-sm text-zinc-600 mt-2 max-w-2xl leading-relaxed">
+            Reports for games tested on iOS and macOS. This list is separate from the upstream KytyPS5 list.
+          </p>
+        </div>
+
+        <div class="shrink-0">
+          <a
+            href="/report"
+            class="inline-flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-full text-sm font-semibold hover:bg-zinc-800 transition-all shadow-sm"
+          >
+            Submit Report
+          </a>
+        </div>
+      </div>
+
+      <!-- Segmented Progress Bar & Legend -->
+      <div class="space-y-3 pt-2">
+        <div class="h-3 w-full bg-zinc-100 rounded-full overflow-hidden flex">
+          {
+            statuses.map((st) => {
+              const count = statusCounts[st] || 0;
+              const pct = totalReports > 0 ? (count / totalReports) * 100 : 0;
+              if (pct === 0) return null;
+              return (
+                <div
+                  style={`width: ${pct}%`}
+                  class={`${STATUS_DEFINITIONS[st].barClass} transition-all`}
+                  title={`${st}: ${count} (${pct.toFixed(0)}%)`}
+                />
+              );
+            })
+          }
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-600">
+          {
+            statuses.map((st) => {
+              const count = statusCounts[st] || 0;
+              const def = STATUS_DEFINITIONS[st];
+              return (
+                <div class="flex items-center gap-1.5">
+                  <span class={`w-2 h-2 rounded-full ${def.dotClass}`} />
+                  <span class="font-medium text-zinc-800">{st}</span>
+                  <span class="text-zinc-400">({count})</span>
+                </div>
+              );
+            })
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs">
+      {
+        statuses.map((st) => {
+          const def = STATUS_DEFINITIONS[st];
+          return (
+            <div class="bg-white rounded-2xl p-4 flex flex-col justify-start space-y-1.5">
+              <div class="flex items-center gap-1.5 font-semibold text-zinc-900">
+                <span class={`w-2 h-2 rounded-full shrink-0 ${def.dotClass}`} />
+                <span>{def.label}</span>
+              </div>
+              <p class="text-xs text-zinc-600 leading-relaxed">
+                {def.description}
+              </p>
+            </div>
+          );
+        })
+      }
+    </div>
+
+    <!-- Search & Results Table -->
+    <CompatibilitySearch />
+  </main>
+
+  <Footer />
+</Layout>

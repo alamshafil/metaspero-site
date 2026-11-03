@@ -1,0 +1,19 @@
+---
+import { STATUS_DEFINITIONS, type CompatibilityStatus } from '../types/compatibility';
+
+interface Props {
+  status: CompatibilityStatus;
+  size?: 'sm' | 'md';
+}
+
+const { status, size = 'sm' } = Astro.props;
+const def = STATUS_DEFINITIONS[status] || STATUS_DEFINITIONS["Doesn't boot"];
+---
+
+<span
+  class={`inline-flex items-center gap-1.5 font-medium ${size === 'md' ? 'text-xs' : 'text-[11px]'} ${def.textClass}`}
+  title={def.description}
+>
+  <span class={`w-1.5 h-1.5 rounded-full shrink-0 ${def.dotClass}`} />
+  <span>{def.label}</span>
+</span>

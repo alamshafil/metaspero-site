@@ -1,0 +1,209 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_CONFIG } from '../../config/site';
+---
+
+<Layout
+  title={`Compile Guide - ${SITE_CONFIG.name}`}
+  description={`How to compile ${SITE_CONFIG.name} from source for iOS and macOS, CMake presets, JIT activation, and repository links.`}
+>
+  <Nav />
+
+  <main class="max-w-[800px] mx-auto px-6 py-12 sm:py-16 space-y-10">
+    <header class="space-y-3">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+        Compile Guide
+      </h1>
+      <p class="text-base text-zinc-600 leading-relaxed">
+        Instructions for building {SITE_CONFIG.name} from source for iOS and macOS, configuring CMake presets, attaching JIT, and managing memory entitlements.
+      </p>
+    </header>
+
+    <!-- Repositories -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        Repositories
+      </h2>
+      <ul class="text-sm text-zinc-600 space-y-2">
+        <li>
+          <a href={SITE_CONFIG.links.github} target="_blank" rel="noopener noreferrer" class="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600">
+            alamshafil/metaspero
+          </a>
+          <span class="text-zinc-500"> - Main iOS & native macOS emulator core (GPL-2.0)</span>
+        </li>
+        <li>
+          <a href={SITE_CONFIG.links.fexCoreDarwin} target="_blank" rel="noopener noreferrer" class="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600">
+            alamshafil/fexcore-darwin
+          </a>
+          <span class="text-zinc-500"> - ARM64 Darwin JIT submodule</span>
+        </li>
+        <li>
+          <a href={SITE_CONFIG.links.websiteRepo} target="_blank" rel="noopener noreferrer" class="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600">
+            alamshafil/metaspero-website
+          </a>
+          <span class="text-zinc-500"> - Documentation and compatibility website</span>
+        </li>
+        <li>
+          <a href={SITE_CONFIG.links.kytyPS5Upstream} target="_blank" rel="noopener noreferrer" class="font-medium text-zinc-900 underline underline-offset-4 hover:text-zinc-600">
+            KytyPS5/KytyPS5
+          </a>
+          <span class="text-zinc-500"> - Upstream PS5 translation layer</span>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Prerequisites -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        Prerequisites
+      </h2>
+      <ul class="text-sm text-zinc-600 space-y-1.5 list-disc list-inside">
+        <li>Apple Silicon Mac running macOS</li>
+        <li>Xcode with iOS SDK installed (<code class="font-mono text-xs">xcode-select --install</code>)</li>
+        <li>CMake, Ninja, glslang, and Python via Homebrew:</li>
+      </ul>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>brew install cmake ninja glslang python</code></pre>
+    </section>
+
+    <!-- 1. Clone -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        1. Clone Repository & Submodules
+      </h2>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        Clone recursively to fetch all submodules including the FEXCore Darwin JIT engine:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>git clone --recursive https://github.com/alamshafil/metaspero.git
+cd metaspero
+
+# If already cloned:
+git submodule update --init --recursive</code></pre>
+      <p class="text-xs text-zinc-500 leading-relaxed">
+        MoltenVK and FFmpeg are downloaded automatically via CMake FetchContent during configuration.
+      </p>
+    </section>
+
+    <!-- 2. Build for iOS -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        2. Compiling for iOS
+      </h2>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        Build with the <code class="font-mono text-xs">ios</code> preset without code signing so it can be signed during sideloading:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>cmake --preset ios
+cmake --build --preset ios -- \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO</code></pre>
+
+      <p class="text-sm text-zinc-600 leading-relaxed pt-1">
+        Package the compiled app bundle into a sideloadable IPA:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>mkdir -p _Build/xcode/Payload
+cp -R _Build/xcode/frontend/swift/Release-iphoneos/Metaspero.app _Build/xcode/Payload/
+cd _Build/xcode
+zip -r -q Metaspero.ipa Payload
+rm -rf Payload</code></pre>
+
+      <p class="text-sm text-zinc-600 leading-relaxed pt-1">
+        Or build directly in Xcode:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>cmake --preset ios
+open _Build/xcode/Metaspero.xcodeproj</code></pre>
+      <p class="text-xs text-zinc-500">
+        Select the Metaspero scheme, choose your connected iOS device, and press Cmd+R.
+      </p>
+    </section>
+
+    <!-- 3. Build for macOS -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        3. Compiling for macOS (Native ARM64)
+      </h2>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        This fork runs natively on Apple Silicon using FEXCore dynamic binary translation rather than Rosetta 2.
+      </p>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        Build the native macOS SwiftUI app:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>cmake --preset macos-swiftui
+cmake --build --preset macos-swiftui</code></pre>
+
+      <p class="text-sm text-zinc-600 leading-relaxed pt-1">
+        Build the CLI binary and run tests:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>cmake --preset macos-arm64-fex
+cmake --build --preset macos-arm64-fex
+ctest --test-dir _Build/macos-arm64 --output-on-failure</code></pre>
+
+      <p class="text-sm text-zinc-600 leading-relaxed pt-1">
+        Or open in Xcode:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>cmake --preset macos-swiftui
+open _Build/xcode-mac/Metaspero.xcodeproj</code></pre>
+    </section>
+
+    <!-- CMake Presets -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        CMake Presets
+      </h2>
+      <div class="text-xs text-zinc-600 space-y-2 font-mono">
+        <div><strong class="text-zinc-900">ios</strong>: iOS device (arm64) Release build</div>
+        <div><strong class="text-zinc-900">ios-debug</strong>: iOS device (arm64) Debug build with tracing</div>
+        <div><strong class="text-zinc-900">macos-swiftui</strong>: macOS native ARM64 SwiftUI application</div>
+        <div><strong class="text-zinc-900">macos-arm64-fex</strong>: macOS native ARM64 CLI and test harness</div>
+        <div><strong class="text-zinc-900">macos</strong>: macOS x86_64 build under Rosetta 2 (upstream compatibility)</div>
+      </div>
+    </section>
+
+    <!-- 4. JIT on iOS -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        4. Running with JIT on iOS
+      </h2>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        iOS requires an attached debugger for JIT compilation permissions:
+      </p>
+      <ol class="text-sm text-zinc-600 space-y-1.5 list-decimal list-inside">
+        <li>Connect LocalDevVPN on your device.</li>
+        <li>Open StikDebug, select Metaspero, and run the <code class="font-mono text-xs">universal.js</code> script.</li>
+        <li>Return to Metaspero and verify JIT status shows Active before launching a game.</li>
+      </ol>
+    </section>
+
+    <!-- 5. Memory Entitlement -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        5. Memory Entitlement & Jetsam Protection
+      </h2>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        By default, iOS Jetsam limits standard apps to roughly 2 GB to 3 GB of RAM. The app includes the increased memory limit entitlement in <code class="font-mono text-xs">src/ios_jit.entitlements</code>:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>&lt;key&gt;com.apple.developer.kernel.increased-memory-limit&lt;/key&gt;
+&lt;true/&gt;
+&lt;key&gt;get-task-allow&lt;/key&gt;
+&lt;true/&gt;</code></pre>
+      <p class="text-xs text-zinc-500 leading-relaxed">
+        An in-app toast alerts you when device memory pressure approaches the Jetsam kill threshold.
+      </p>
+    </section>
+
+    <!-- 6. Sideloading & Game Files -->
+    <section class="space-y-3">
+      <h2 class="text-xl font-bold tracking-tight text-zinc-900">
+        6. Sideloading & Game Files
+      </h2>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        Install the IPA via AltStore, SideStore, or TrollStore. Place decrypted game directories in application storage using the iOS Files app:
+      </p>
+      <pre class="bg-zinc-900 text-zinc-100 p-4 rounded-xl font-mono text-xs overflow-x-auto"><code>On My iPhone / Metaspero / [TitleID] /</code></pre>
+      <p class="text-xs text-zinc-500 leading-relaxed">
+        Folders must contain <code class="font-mono">eboot.bin</code> (or <code class="font-mono">main.elf</code>), <code class="font-mono">param.json</code>, and assets.
+      </p>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>

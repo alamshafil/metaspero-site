@@ -1,0 +1,78 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_CONFIG } from '../config/site';
+
+const faqs = [
+  {
+    q: `What is ${SITE_CONFIG.name}?`,
+    a: `${SITE_CONFIG.name} is an open-source PlayStation 5 emulator for Apple Silicon, with iOS as the primary target. It is forked from KytyPS5 and uses custom FEXCore for ARM64 Darwin JIT translation and MoltenVK for Vulkan-to-Metal graphics.`,
+  },
+  {
+    q: 'Which operating system versions and Apple Silicon hardware are supported?',
+    a: 'macOS requires an Apple Silicon Mac (M1 or newer, 16 GB RAM recommended, 8 GB for light 2D games). iOS/iPadOS requires an A-series or M-series chip with JIT enabled and 12 GB RAM recommended (8 GB for light 2D games).',
+  },
+  {
+    q: 'Can running the emulator cause device freezes or crashes due to memory usage?',
+    a: 'Yes. PS5 emulation is highly experimental and memory intensive. Running out of unified memory can cause severe system lag, device freezes, or immediate process kills by iOS Jetsam. For 3D titles on iOS, the increased memory limit entitlement is strictly required.',
+  },
+  {
+    q: 'Where can I find the source code and git repositories?',
+    a: `The project is hosted on GitHub at https://github.com/alamshafil/metaspero. The custom ARM64 Darwin JIT submodule is hosted at https://github.com/alamshafil/fexcore-darwin, and the documentation website repository is at https://github.com/alamshafil/metaspero-website.`,
+  },
+  {
+    q: 'Why does the macOS version not use Rosetta 2?',
+    a: 'Upstream KytyPS5 relies on Rosetta 2 by compiling an x86_64 binary. Apple is expected to remove Rosetta 2 in a future macOS release (anticipated in macOS 28). This fork shares a unified ARM64 codebase across both iOS and macOS, running natively via FEXCore dynamic binary translation and MoltenVK Metal rendering.',
+  },
+  {
+    q: 'How does JIT activation work on iOS?',
+    a: 'iOS requires Just-In-Time compilation to translate x86_64 code into ARM64 instructions at runtime. On iOS, JIT is attached using StikDebug with the universal.js script over LocalDevVPN.',
+  },
+  {
+    q: 'What is the increased memory entitlement, and why is it needed?',
+    a: 'Some smaller games run without it, but larger games require the com.apple.developer.kernel.increased-memory-limit entitlement to allocate extra RAM on iOS. If memory pressure gets too high, the app presents an in-app warning toast alerting you that iOS Jetsam may terminate the process.',
+  },
+  {
+    q: 'Is this emulator affiliated with Sony?',
+    a: 'No. This is an independent, non-commercial open-source research initiative and is not endorsed by, affiliated with, or associated with Sony Interactive Entertainment Inc.',
+  },
+  {
+    q: 'Does it support controllers?',
+    a: 'Yes. Physical DualSense, DualShock 4, and Xbox controllers are supported over Bluetooth or USB-C.',
+  },
+  {
+    q: 'How do I submit test results?',
+    a: 'You can use the report generator at /report to create a formatted test report for GitHub Issues or Pull Requests.',
+  },
+];
+---
+
+<Layout
+  title={`FAQ - ${SITE_CONFIG.name}`}
+  description={`Frequently asked questions about ${SITE_CONFIG.name}, JIT, memory limits, and hardware.`}
+>
+  <Nav />
+
+  <main class="max-w-[800px] mx-auto px-6 py-12 sm:py-16 space-y-12">
+    <div class="space-y-3">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+        Frequently Asked Questions
+      </h1>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        Common questions about the project, iOS support, JIT requirements, and memory limits.
+      </p>
+    </div>
+
+    <div class="space-y-8 pt-4 border-t border-zinc-100">
+      {faqs.map((faq) => (
+        <div class="space-y-2 pb-6 border-b border-zinc-100 last:border-b-0">
+          <h2 class="text-base sm:text-lg font-semibold text-zinc-900">{faq.q}</h2>
+          <p class="text-sm text-zinc-600 leading-relaxed">{faq.a}</p>
+        </div>
+      ))}
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

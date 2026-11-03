@@ -1,0 +1,79 @@
+---
+import '../styles/global.css';
+import { SITE_CONFIG } from '../config/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const {
+  title = `${SITE_CONFIG.name} - ${SITE_CONFIG.tagline}`,
+  description = SITE_CONFIG.description,
+  ogImage = '/og-image.png',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || SITE_CONFIG.url);
+const ogImageURL = new URL(ogImage, Astro.site || SITE_CONFIG.url).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content={SITE_CONFIG.themeColor} />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content={SITE_CONFIG.name} />
+    <meta property="og:image" content={ogImageURL} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <title>{title}</title>
+
+    <!-- Schema.org Application -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": SITE_CONFIG.name,
+      "operatingSystem": "iOS, macOS",
+      "applicationCategory": "GameApplication",
+      "description": SITE_CONFIG.description,
+      "author": {
+        "@type": "Person",
+        "name": SITE_CONFIG.author.name,
+        "url": SITE_CONFIG.author.url
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    })} />
+  </head>
+  <body class="bg-page text-zinc-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-950">
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,309 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_CONFIG } from '../config/site';
+import { Clipboard } from '@lucide/astro';
+import GithubIcon from '../components/icons/GithubIcon.astro';
+---
+
+<Layout
+  title={`Submit Game Report - ${SITE_CONFIG.name}`}
+  description="Generate and submit an Astro Markdown compatibility report for Metaspero."
+>
+  <Nav />
+
+  <main class="max-w-[1100px] mx-auto px-6 py-12 sm:py-16 space-y-12">
+    <!-- Header -->
+    <div class="space-y-3 max-w-2xl">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+        Submit Game Report
+      </h1>
+      <p class="text-sm text-zinc-600 leading-relaxed">
+        Use this generator to create the Astro Markdown file for a game test report. You can save it as an individual <code class="bg-zinc-100 px-1 py-0.5 rounded text-xs font-mono">.md</code> file in <code class="bg-zinc-100 px-1 py-0.5 rounded text-xs font-mono">src/content/compatibility/</code> via Pull Request or paste it into a GitHub Issue.
+      </p>
+    </div>
+
+    <!-- How to submit guide cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
+      <div class="bg-white rounded-2xl p-6 space-y-2">
+        <div class="font-semibold text-zinc-900 text-sm">Option 1: GitHub Pull Request (Recommended)</div>
+        <p class="text-zinc-600 leading-relaxed">
+          1. Copy the generated Markdown below.<br />
+          2. Create a new file: <code class="bg-zinc-100 px-1 py-0.5 rounded font-mono">src/content/compatibility/&lt;slug&gt;-&lt;platform&gt;.md</code><br />
+          3. Run <code class="bg-zinc-100 px-1 py-0.5 rounded font-mono">npm run build</code> locally to verify schema validation.<br />
+          4. Open a Pull Request with title: <code class="bg-zinc-100 px-1 py-0.5 rounded font-mono">[Report] Title (Platform / PPSAXXXXX) - Status</code>
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 space-y-2">
+        <div class="font-semibold text-zinc-900 text-sm">Option 2: GitHub Issue</div>
+        <p class="text-zinc-600 leading-relaxed">
+          1. Click the "Open GitHub Issue" button below.<br />
+          2. Paste the generated Markdown into the issue description.<br />
+          3. Maintainers will review the report and merge it into the database.
+        </p>
+      </div>
+    </div>
+
+    <!-- Form and Output -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+      <!-- Input fields -->
+      <div class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">Game Title</label>
+            <input
+              type="text"
+              id="form-title"
+              placeholder="e.g. Astro's Playroom"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+            />
+          </div>
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">Title ID (PPSA only)</label>
+            <input
+              type="text"
+              id="form-titleid"
+              placeholder="e.g. PPSA01325"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900 uppercase font-mono"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">Platform</label>
+            <select
+              id="form-platform"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-800"
+            >
+              <option value="iOS" selected>iOS</option>
+              <option value="macOS">macOS</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">Status</label>
+            <select
+              id="form-status"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-800 font-medium"
+            >
+              <option value="In game" selected>In game</option>
+              <option value="Main menu">Main menu</option>
+              <option value="Logo">Logo</option>
+              <option value="Doesn't boot">Doesn't boot</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">Device Model</label>
+            <input
+              type="text"
+              id="form-device"
+              placeholder="e.g. iPhone 16"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+            />
+          </div>
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">OS Version</label>
+            <input
+              type="text"
+              id="form-os"
+              placeholder="e.g. iOS 27"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">FPS / Performance</label>
+            <input
+              type="text"
+              id="form-fps"
+              placeholder="e.g. 60 or N/A"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+            />
+          </div>
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">JIT Method</label>
+            <input
+              type="text"
+              id="form-jit"
+              placeholder="e.g. StikDebug"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+            />
+          </div>
+          <div>
+            <label class="block font-medium text-zinc-700 mb-1">Emulator Version</label>
+            <input
+              type="text"
+              id="form-version"
+              value="0.1.0"
+              placeholder="0.1.0"
+              class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-medium text-zinc-700 mb-1">Your Name / GitHub Username</label>
+          <input
+            type="text"
+            id="form-reporter"
+            placeholder="e.g. shafilalam"
+            class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900"
+          />
+        </div>
+
+        <div>
+          <label class="block font-medium text-zinc-700 mb-1">Summary / Observations</label>
+          <textarea
+            id="form-summary"
+            rows="2"
+            placeholder="Brief overview of how the game boots, performs, and memory usage."
+            class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900 leading-relaxed"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block font-medium text-zinc-700 mb-1">Notes (one per line)</label>
+          <textarea
+            id="form-notes"
+            rows="3"
+            placeholder="- Tested with StikDebug universal.js JIT attachment&#10;- Memory usage within stable limits"
+            class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-900/10 text-zinc-900 font-mono text-[11px] leading-relaxed"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Preview column -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between pb-1">
+          <span class="text-xs font-semibold text-zinc-900">Astro Markdown Output</span>
+          <button
+            id="copy-report-btn"
+            class="inline-flex items-center gap-1.5 bg-zinc-900 text-white text-xs font-medium px-4 py-2 rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
+          >
+            <Clipboard size={14} />
+            <span id="copy-label">Copy File</span>
+          </button>
+        </div>
+
+        <pre id="output-preview" class="bg-white p-5 rounded-2xl text-[11px] font-mono text-zinc-700 overflow-x-auto max-h-[460px] whitespace-pre-wrap leading-relaxed"></pre>
+
+        <a
+          id="github-submit-link"
+          href={SITE_CONFIG.links.reportIssue}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center justify-center gap-2 w-full bg-zinc-900 text-white hover:bg-zinc-800 text-sm font-semibold py-3 px-6 rounded-full transition-colors"
+        >
+          <GithubIcon class="w-4 h-4" />
+          <span>Open GitHub Issue</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
+
+<script>
+  const formTitle = document.getElementById('form-title') as HTMLInputElement;
+  const formTitleId = document.getElementById('form-titleid') as HTMLInputElement;
+  const formPlatform = document.getElementById('form-platform') as HTMLSelectElement;
+  const formStatus = document.getElementById('form-status') as HTMLSelectElement;
+  const formDevice = document.getElementById('form-device') as HTMLInputElement;
+  const formOs = document.getElementById('form-os') as HTMLInputElement;
+  const formFps = document.getElementById('form-fps') as HTMLInputElement;
+  const formJit = document.getElementById('form-jit') as HTMLInputElement;
+  const formVersion = document.getElementById('form-version') as HTMLInputElement;
+  const formReporter = document.getElementById('form-reporter') as HTMLInputElement;
+  const formSummary = document.getElementById('form-summary') as HTMLTextAreaElement;
+  const formNotes = document.getElementById('form-notes') as HTMLTextAreaElement;
+
+  const outputPreview = document.getElementById('output-preview');
+  const copyBtn = document.getElementById('copy-report-btn');
+  const copyLabel = document.getElementById('copy-label');
+  const githubLink = document.getElementById('github-submit-link') as HTMLAnchorElement;
+
+  function generateMarkdown(): string {
+    const title = formTitle.value.trim() || "Astro's Playroom";
+    let titleId = formTitleId.value.trim().toUpperCase() || 'PPSA01325';
+    if (!titleId.startsWith('PPSA')) {
+      titleId = 'PPSA' + titleId.replace(/[^0-9]/g, '').padStart(5, '0');
+    }
+    const platform = formPlatform.value;
+    const status = formStatus.value;
+    const device = formDevice.value.trim() || 'iPhone 16';
+    const os = formOs.value.trim() || 'iOS 27';
+    const fps = formFps.value.trim() || '60';
+    const jit = formJit.value.trim() || 'StikDebug';
+    const version = formVersion?.value.trim() || '0.1.0';
+    const reporter = formReporter.value.trim() || 'shafilalam';
+    const summary = formSummary.value.trim() || 'Game stuck on splash screen.';
+    
+    const rawNotes = (formNotes.value.trim() || 'Tested with StikDebug universal.js JIT attachment\nMemory usage within stable limits')
+      .split('\n')
+      .map(n => n.replace(/^[-*]\s*/, '').trim())
+      .filter(Boolean);
+    const formattedNotes = rawNotes.length > 0
+      ? rawNotes.map(n => `  - "${n}"`).join('\n')
+      : '  []';
+
+    const today = new Date().toISOString().split('T')[0];
+
+    return `---
+title: "${title}"
+titleId: "${titleId}"
+platform: "${platform}"
+status: "${status}"
+testedDevice: "${device}"
+osVersion: "${os}"
+fps: "${fps}"
+jitMethod: "${jit}"
+emulatorVersion: "${version}"
+dateReported: "${today}"
+reporter: "${reporter}"
+notes:
+${formattedNotes}
+---
+
+${summary}`;
+  }
+
+  function updatePreview() {
+    const md = generateMarkdown();
+    if (outputPreview) outputPreview.textContent = md;
+
+    const title = formTitle.value.trim() || 'Game Title';
+    const platform = formPlatform.value || 'iOS';
+
+    if (githubLink) {
+      let titleId = formTitleId.value.trim().toUpperCase() || 'PPSA00000';
+      const issueTitle = encodeURIComponent(`[Report] ${title} (${platform} / ${titleId}) - ${formStatus.value}`);
+      const issueBody = encodeURIComponent(md);
+      githubLink.href = `https://github.com/shafilalam/kyty-apple/issues/new?title=${issueTitle}&body=${issueBody}`;
+    }
+  }
+
+  [formTitle, formTitleId, formPlatform, formStatus, formDevice, formOs, formFps, formJit, formVersion, formReporter, formSummary, formNotes].forEach(
+    el => el?.addEventListener('input', updatePreview)
+  );
+
+  updatePreview();
+
+  copyBtn?.addEventListener('click', async () => {
+    const md = generateMarkdown();
+    await navigator.clipboard.writeText(md);
+    if (copyLabel) {
+      copyLabel.textContent = 'Copied!';
+      setTimeout(() => {
+        copyLabel.textContent = 'Copy File';
+      }, 2000);
+    }
+  });
+</script>

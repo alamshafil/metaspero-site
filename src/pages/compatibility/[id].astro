@@ -1,0 +1,188 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import StatusBadge from '../../components/StatusBadge.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { SITE_CONFIG } from '../../config/site';
+import { ChevronLeft, ChevronRight } from '@lucide/astro';
+
+export async function getStaticPaths() {
+  const reports = await getCollection('compatibility');
+  return reports.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'compatibility'>;
+}
+
+const { entry } = Astro.props;
+const report = entry.data;
+const { Content } = await render(entry);
+
+const allReports = await getCollection('compatibility');
+// Find sibling reports for the same game on another OS (or different entry)
+const siblingReports = allReports.filter(
+  (r) =>
+    r.id !== entry.id &&
+    (r.data.titleId.toUpperCase() === report.titleId.toUpperCase() ||
+      r.data.title.trim().toLowerCase() === report.title.trim().toLowerCase())
+);
+
+const allNotes = report.notes || [];
+---
+
+<Layout
+  title={`${report.title} (${report.platform}) - ${report.titleId} - ${SITE_CONFIG.name}`}
+  description={`Compatibility report for ${report.title} on ${report.platform} (${report.testedDevice}).`}
+>
+  <Nav />
+
+  <main class="max-w-[800px] mx-auto px-6 py-12 sm:py-16 space-y-10">
+    <div>
+      <a
+        href="/compatibility"
+        class="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+      >
+        <ChevronLeft size={14} />
+        <span>Back to Compatibility</span>
+      </a>
+    </div>
+
+    <!-- Title and basic info -->
+    <header class="space-y-6 pb-8 border-b border-zinc-200">
+      <div class="space-y-3">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-zinc-900 leading-tight">
+          {report.title}
+        </h1>
+
+        <!-- Status row below title -->
+        <div class="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+          <StatusBadge status={report.status} size="md" />
+          <span class="text-zinc-300">&bull;</span>
+          <span class="font-mono text-zinc-700">{report.titleId}</span>
+          <span class="text-zinc-300">&bull;</span>
+          <span class="text-zinc-700">{report.platform}</span>
+          <span class="text-zinc-300">&bull;</span>
+          <span class="text-zinc-700">Build {report.emulatorVersion}</span>
+        </div>
+      </div>
+
+      <!-- Other Platform Reports -->
+      {
+        siblingReports.length > 0 && (
+          <div class="space-y-3 pt-4">
+            <h3 class="text-sm font-semibold text-zinc-900">Also tested on</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {siblingReports.map((sibling) => (
+                <a
+                  href={`/compatibility/${sibling.id}`}
+                  class="group flex items-center justify-between bg-white rounded-xl p-4 hover:ring-1 hover:ring-zinc-200/80 transition-all"
+                >
+                  <div>
+                    <div class="text-zinc-500 text-xs mb-1 font-medium transition-colors">
+                      {sibling.data.platform}
+                    </div>
+                    <div class="text-sm font-semibold text-zinc-900">
+                      {sibling.data.testedDevice} 
+                      <span class="text-zinc-400 font-normal ml-1 text-xs">&middot; {sibling.data.fps}</span>
+                    </div>
+                  </div>
+                  
+                  <StatusBadge status={sibling.data.status} size="sm" />
+                </a>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      <!-- Stats boxes -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-2 text-xs">
+        <div class="bg-white rounded-xl p-4">
+          <div class="text-zinc-500 text-xs mb-1 font-medium">Device</div>
+          <div class="text-sm font-semibold text-zinc-900">{report.testedDevice || 'N/A'}</div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4">
+          <div class="text-zinc-500 text-xs mb-1 font-medium">Operating System</div>
+          <div class="text-sm font-semibold text-zinc-900">{report.osVersion || 'N/A'}</div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4">
+          <div class="text-zinc-500 text-xs mb-1 font-medium">Performance</div>
+          <div class="text-sm font-semibold text-zinc-900">{report.fps || 'N/A'}</div>
+        </div>
+
+        <div class="bg-white rounded-xl p-4">
+          <div class="text-zinc-500 text-xs mb-1 font-medium">JIT Method</div>
+          <div class="text-sm font-semibold text-zinc-900">{report.jitMethod || 'N/A'}</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- In-Game Screenshot -->
+    {
+      report.screenshot && (
+        <section class="space-y-2">
+          <div class="rounded-2xl overflow-hidden bg-black shadow-sm ring-1 ring-black/5 aspect-[16/9] flex items-center justify-center">
+            <img
+              src={report.screenshot}
+              alt={`In-game screenshot of ${report.title} running on ${report.testedDevice}`}
+              class="w-full h-full object-contain"
+              loading="eager"
+            />
+          </div>
+          <p class="text-xs text-zinc-500 text-center">
+            Actual in-game capture running on {report.testedDevice}
+          </p>
+        </section>
+      )
+    }
+
+    <!-- Test Writeup / Markdown Body used for summary -->
+    <section class="space-y-3">
+      <h2 class="text-base font-semibold text-zinc-900">Summary</h2>
+      <div class="text-sm sm:text-base text-zinc-700 leading-relaxed">
+        <Content />
+      </div>
+    </section>
+
+    <!-- Notes -->
+    {
+      allNotes.length > 0 && (
+        <section class="space-y-3 pt-6 border-t border-zinc-200">
+          <h2 class="text-base font-semibold text-zinc-900">Notes</h2>
+          <ul class="space-y-2 text-sm sm:text-base text-zinc-700 leading-relaxed">
+            {allNotes.map((note) => (
+              <li class="flex items-start gap-2.5">
+                <span class="text-zinc-400 mt-1.5 text-xs">&bull;</span>
+                <span>{note}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <!-- Report footer info -->
+    <div class="pt-8 border-t border-zinc-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-zinc-500">
+      <div>
+        Reported on <span class="text-zinc-800 font-medium">{report.dateReported}</span> by <span class="font-medium text-zinc-900">{report.reporter}</span>
+      </div>
+
+      <div class="flex items-center gap-4 text-sm font-medium">
+        <a href="/report" class="text-zinc-900 underline underline-offset-4 hover:text-zinc-600 transition-colors inline-flex items-center gap-1">
+          <span>Submit Updated Report</span>
+          <ChevronRight size={14} />
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

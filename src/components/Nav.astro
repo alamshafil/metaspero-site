@@ -1,0 +1,96 @@
+---
+import { SITE_CONFIG } from '../config/site';
+import { Menu, X } from '@lucide/astro';
+import GithubIcon from './icons/GithubIcon.astro';
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-50 bg-page/85 backdrop-blur-lg border-b border-zinc-200" id="top">
+  <div class="max-w-[1100px] mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      <a href="/" class="flex items-center gap-2 font-semibold text-sm text-zinc-900 transition-opacity hover:opacity-80">
+        <img
+          src="/app-icon.png"
+          alt=""
+          width="24"
+          height="24"
+          class="w-6 h-6 rounded select-none"
+        />
+        <span class="tracking-tight">{SITE_CONFIG.name}</span>
+      </a>
+    </div>
+
+    <button id="mobile-menu-toggle" class="md:hidden p-2 -mr-2 text-zinc-500 hover:text-zinc-900 transition-colors" aria-label="Toggle menu">
+      <Menu id="icon-menu" class="w-5 h-5" />
+      <X id="icon-close" class="w-5 h-5 hidden" />
+    </button>
+
+    <nav class="hidden md:flex items-center gap-6" aria-label="Main navigation">
+      {SITE_CONFIG.nav.map((link) => {
+        const isActive = currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href));
+        return (
+          <a
+            href={link.href}
+            class={`text-sm transition-colors ${
+              isActive ? 'text-zinc-900 font-semibold' : 'text-zinc-500 hover:text-zinc-900'
+            }`}
+          >
+            {link.label}
+          </a>
+        );
+      })}
+      <a
+        href={SITE_CONFIG.links.github}
+        class="inline-flex items-center gap-1.5 bg-zinc-900 text-white px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-zinc-800 shadow-sm"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <GithubIcon class="w-3.5 h-3.5" />
+        <span>GitHub</span>
+      </a>
+    </nav>
+  </div>
+
+  <div id="mobile-menu" class="hidden md:hidden border-t border-zinc-200 bg-page shadow-lg absolute w-full">
+    <nav class="flex flex-col px-6 py-4 gap-4" aria-label="Mobile navigation">
+      {SITE_CONFIG.nav.map((link) => (
+        <a
+          href={link.href}
+          class="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition-colors"
+        >
+          {link.label}
+        </a>
+      ))}
+      <a
+        href={SITE_CONFIG.links.github}
+        class="inline-flex items-center justify-center gap-2 bg-zinc-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all hover:bg-zinc-800 shadow-sm text-center mt-2"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <GithubIcon class="w-4 h-4" />
+        <span>View on GitHub</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggleBtn = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const iconMenu = document.getElementById('icon-menu');
+  const iconClose = document.getElementById('icon-close');
+
+  toggleBtn?.addEventListener('click', () => {
+    const isHidden = mobileMenu?.classList.contains('hidden');
+    if (isHidden) {
+      mobileMenu?.classList.remove('hidden');
+      iconMenu?.classList.add('hidden');
+      iconClose?.classList.remove('hidden');
+    } else {
+      mobileMenu?.classList.add('hidden');
+      iconMenu?.classList.remove('hidden');
+      iconClose?.classList.add('hidden');
+    }
+  });
+</script>

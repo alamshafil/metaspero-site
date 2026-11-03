@@ -1,0 +1,168 @@
+---
+import { getCollection } from 'astro:content';
+import StatusBadge from './StatusBadge.astro';
+import { type CompatibilityStatus, type Platform } from '../types/compatibility';
+import { Search, ChevronRight } from '@lucide/astro';
+
+const reports = await getCollection('compatibility');
+const totalReports = reports.length;
+const statuses: CompatibilityStatus[] = ['In game', 'Main menu', 'Logo', "Doesn't boot"];
+const platforms: Platform[] = ['iOS', 'macOS'];
+---
+
+<div class="space-y-6" id="compatibility-app">
+  <!-- Controls bar -->
+  <div class="flex flex-col sm:flex-row gap-3">
+    <div class="relative flex-1">
+      <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
+      <input
+        type="text"
+        id="compat-search-input"
+        placeholder="Search title, PPSA ID, device..."
+        class="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-zinc-400 text-zinc-900 placeholder:text-zinc-400 transition-colors"
+      />
+    </div>
+
+    <div class="flex items-center gap-2">
+      <select
+        id="compat-platform-filter"
+        class="w-full sm:w-auto px-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl text-zinc-700 focus:outline-none focus:border-zinc-400 cursor-pointer"
+      >
+        <option value="all">All Platforms</option>
+        {platforms.map((p) => (
+          <option value={p}>{p}</option>
+        ))}
+      </select>
+
+      <select
+        id="compat-status-filter"
+        class="w-full sm:w-auto px-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl text-zinc-700 focus:outline-none focus:border-zinc-400 cursor-pointer"
+      >
+        <option value="all">All Statuses</option>
+        {statuses.map((st) => (
+          <option value={st}>{st}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <!-- Summary info -->
+  <div class="text-xs text-zinc-600 px-1">
+    Showing <span class="font-medium text-zinc-700" id="visible-count">{totalReports}</span> reports
+  </div>
+
+  <!-- Table with striping -->
+  <div class="rounded-2xl overflow-hidden bg-white max-w-full">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm min-w-[640px]" id="compat-table">
+        <thead class="bg-zinc-50/70 border-b border-zinc-100 text-xs text-zinc-500 font-medium">
+          <tr>
+            <th class="py-3 px-4">Title</th>
+            <th class="py-3 px-4">Title ID</th>
+            <th class="py-3 px-4">Platform</th>
+            <th class="py-3 px-4">Device</th>
+            <th class="py-3 px-4">FPS</th>
+            <th class="py-3 px-4">Status</th>
+            <th class="py-3 px-4 text-right">Details</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-zinc-100" id="compat-tbody">
+          {
+            reports.map((report) => (
+              <tr
+                class="game-row odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors"
+                data-title={report.data.title.toLowerCase()}
+                data-titleid={report.data.titleId.toLowerCase()}
+                data-status={report.data.status}
+                data-platform={report.data.platform}
+                data-device={report.data.testedDevice.toLowerCase()}
+              >
+                <td class="py-3.5 px-4 font-medium text-zinc-900">
+                  <a href={`/compatibility/${report.id}`} class="hover:underline">
+                    {report.data.title}
+                  </a>
+                </td>
+                <td class="py-3.5 px-4 font-mono text-xs text-zinc-500">{report.data.titleId}</td>
+                <td class="py-3.5 px-4 text-xs text-zinc-600">{report.data.platform}</td>
+                <td class="py-3.5 px-4 text-xs text-zinc-600">{report.data.testedDevice}</td>
+                <td class="py-3.5 px-4 text-xs font-medium text-zinc-800">{report.data.fps}</td>
+                <td class="py-3.5 px-4">
+                  <StatusBadge status={report.data.status} />
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <a
+                    href={`/compatibility/${report.id}`}
+                    class="inline-flex items-center gap-0.5 text-xs text-zinc-500 hover:text-zinc-900 transition-colors"
+                  >
+                    <span>View</span>
+                    <ChevronRight size={13} />
+                  </a>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="no-results" class="hidden text-center py-12 text-sm text-zinc-400">
+    No matching reports found.
+  </div>
+</div>
+
+<script>
+  const searchInput = document.getElementById('compat-search-input') as HTMLInputElement;
+  const platformFilter = document.getElementById('compat-platform-filter') as HTMLSelectElement;
+  const statusFilter = document.getElementById('compat-status-filter') as HTMLSelectElement;
+  const rows = document.querySelectorAll<HTMLElement>('.game-row');
+  const visibleCountEl = document.getElementById('visible-count');
+  const noResultsEl = document.getElementById('no-results');
+  const table = document.getElementById('compat-table');
+
+  function filterReports() {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    const platform = platformFilter?.value || 'all';
+    const status = statusFilter?.value || 'all';
+    let count = 0;
+
+    rows.forEach((row) => {
+      const title = row.dataset.title || '';
+      const titleId = row.dataset.titleid || '';
+      const rowStatus = row.dataset.status || '';
+      const rowPlatform = row.dataset.platform || '';
+      const device = row.dataset.device || '';
+
+      const matchSearch =
+        !query ||
+        title.includes(query) ||
+        titleId.includes(query) ||
+        device.includes(query);
+
+      const matchStatus = status === 'all' || rowStatus === status;
+      const matchPlatform = platform === 'all' || rowPlatform === platform;
+
+      if (matchSearch && matchStatus && matchPlatform) {
+        row.style.display = '';
+        count++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    if (visibleCountEl) visibleCountEl.textContent = count.toString();
+    if (noResultsEl && table) {
+      if (count === 0) {
+        noResultsEl.classList.remove('hidden');
+        table.classList.add('hidden');
+      } else {
+        noResultsEl.classList.add('hidden');
+        table.classList.remove('hidden');
+      }
+    }
+  }
+
+  searchInput?.addEventListener('input', filterReports);
+  platformFilter?.addEventListener('change', filterReports);
+  statusFilter?.addEventListener('change', filterReports);
+</script>

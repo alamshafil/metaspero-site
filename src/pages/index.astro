@@ -1,0 +1,518 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import StatusBadge from '../components/StatusBadge.astro';
+import GithubIcon from '../components/icons/GithubIcon.astro';
+import { SITE_CONFIG } from '../config/site';
+import { getCollection } from 'astro:content';
+import { STATUS_DEFINITIONS, type CompatibilityStatus } from '../types/compatibility';
+import {
+  Cpu,
+  Layers,
+  Smartphone,
+  Laptop,
+  Gamepad2,
+  ChevronRight,
+  TriangleAlert,
+} from '@lucide/astro';
+
+const allReports = await getCollection('compatibility');
+const totalReports = allReports.length;
+
+// Counts for "Compatibility at a glance"
+const statusOrder: CompatibilityStatus[] = ['In game', 'Main menu', 'Logo', "Doesn't boot"];
+const statusCounts = statusOrder.reduce((acc, st) => {
+  acc[st] = allReports.filter((r) => r.data.status === st).length;
+  return acc;
+}, {} as Record<CompatibilityStatus, number>);
+
+const features = [
+  {
+    title: 'FEXCore',
+    description: 'ARM64 JIT compiler for iOS and macOS.',
+    icon: 'cpu',
+  },
+  {
+    title: 'MoltenVK',
+    description: 'Converts Vulkan calls into Apple Metal.',
+    icon: 'layers',
+  },
+  {
+    title: 'SwiftUI',
+    description: 'Native app for iOS and macOS.',
+    icon: 'smartphone',
+  },
+  {
+    title: 'KytyPS5',
+    description: 'Forked from upstream KytyPS5 code.',
+    icon: 'gamepad',
+  },
+];
+---
+
+<Layout title={`${SITE_CONFIG.name} - PS5 Emulator for iOS & macOS`}>
+  <Nav />
+
+  <main class="max-w-[1100px] mx-auto px-6 pb-24 space-y-24">
+    <!-- Hero -->
+    <section class="pt-16 sm:pt-20">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center min-w-0">
+        <div class="flex flex-col items-start gap-5 min-w-0">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-zinc-900 leading-[1.1]">
+            PS5 Emulator for iOS & macOS
+          </h1>
+
+          <p class="text-lg md:text-xl text-zinc-600 leading-relaxed">
+            An open-source PlayStation 5 emulator forked from KytyPS5. Uses FEXCore for CPU translation, MoltenVK for graphics, and a native Swift app for iOS and macOS.
+          </p>
+
+          <div class="flex gap-3 items-center flex-wrap pt-2">
+            <a
+              href="/compatibility"
+              class="inline-flex items-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-full text-sm font-semibold shadow-sm hover:bg-zinc-800 transition-all"
+            >
+              View Compatibility
+            </a>
+            <a
+              href={SITE_CONFIG.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 bg-white border border-zinc-200 text-zinc-700 px-6 py-3 rounded-full text-sm font-semibold hover:border-zinc-300 hover:text-zinc-900 transition-all"
+            >
+              <GithubIcon class="w-4 h-4" />
+              <span>View Source</span>
+            </a>
+          </div>
+
+          <p class="text-xs text-zinc-500">
+            Pre-built app &amp; IPA releases coming soon &middot; See the <a href="/docs/compile" class="underline underline-offset-2 hover:text-zinc-800">compile guide</a> to build from source.
+          </p>
+        </div>
+
+        <div class="hero-images relative flex items-center justify-center h-[320px] sm:h-[400px] lg:h-[480px] py-6 w-full max-w-full">
+          <div class="hero-phone hero-phone-back absolute">
+            <img
+              src="/screenshots/mockups/ios-trophy-mockup.webp"
+              alt="Metaspero Trophies on iOS"
+              width="240"
+              height="494"
+              class="w-[135px] sm:w-[170px] lg:w-[200px] h-auto drop-shadow-2xl select-none"
+              loading="eager"
+            />
+          </div>
+          <div class="hero-phone hero-phone-main absolute z-10">
+            <img
+              src="/screenshots/mockups/ios-home-mockup.webp"
+              alt="Metaspero Game Library on iOS"
+              width="260"
+              height="536"
+              class="w-[155px] sm:w-[190px] lg:w-[220px] h-auto drop-shadow-2xl select-none"
+              loading="eager"
+            />
+          </div>
+          <div class="hero-phone hero-phone-front absolute">
+            <img
+              src="/screenshots/mockups/ios-details-mockup.webp"
+              alt="Metaspero Game Details and Controller on iOS"
+              width="240"
+              height="494"
+              class="w-[135px] sm:w-[170px] lg:w-[200px] h-auto drop-shadow-2xl select-none"
+              loading="eager"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Architecture / Features -->
+    <section class="scroll-mt-24">
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-8 sm:mb-10">Architecture</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {
+          features.map((feat) => (
+            <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between">
+              <div>
+                <div class="mb-4 text-zinc-700">
+                  {feat.icon === 'cpu' && <Cpu size={22} />}
+                  {feat.icon === 'layers' && <Layers size={22} />}
+                  {feat.icon === 'smartphone' && <Smartphone size={22} />}
+                  {feat.icon === 'gamepad' && <Gamepad2 size={22} />}
+                </div>
+                <h3 class="text-base font-semibold text-zinc-900 mb-2">{feat.title}</h3>
+                <p class="text-sm text-zinc-600 leading-relaxed">{feat.description}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Requirements -->
+    <section id="requirements" class="scroll-mt-24">
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-6">Requirements</h2>
+
+      <div class="space-y-4">
+        <!-- Warning -->
+        <div class="bg-zinc-100/50 rounded-xl p-4 flex items-start sm:items-center gap-3">
+          <TriangleAlert size={18} class="text-zinc-500 shrink-0 mt-0.5 sm:mt-0" />
+          <p class="text-sm text-zinc-600 leading-relaxed">
+            <strong class="text-zinc-900 font-medium">Experimental:</strong> PS5 games require significant memory. The app may crash or freeze on older devices with less RAM.
+          </p>
+        </div>
+
+        <!-- Requirement Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- macOS -->
+          <div class="bg-white rounded-xl p-5 border border-zinc-100/50">
+            <div class="flex items-center gap-3 mb-3">
+              <Laptop size={18} class="text-zinc-700" />
+              <h3 class="font-semibold text-zinc-900">macOS</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-zinc-600">
+              <li>&bull; M1 Mac or newer</li>
+              <li>&bull; 16 GB RAM for 3D games (8 GB for 2D)</li>
+            </ul>
+          </div>
+
+          <!-- iOS / iPadOS -->
+          <div class="bg-white rounded-xl p-5 border border-zinc-100/50">
+            <div class="flex items-center gap-3 mb-3">
+              <Smartphone size={18} class="text-zinc-700" />
+              <h3 class="font-semibold text-zinc-900">iOS & iPadOS</h3>
+            </div>
+            <ul class="space-y-2 text-sm text-zinc-600">
+              <li>&bull; Newer iPhone or iPad (iOS 18+)</li>
+              <li>&bull; 12 GB RAM for 3D games (8 GB for 2D)</li>
+              <li>&bull; JIT and extra memory permissions required</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- In-Game Captures -->
+    <section class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">In-Game Captures</h2>
+          <p class="text-sm text-zinc-600 mt-2 max-w-2xl leading-relaxed">
+            Actual gameplay captures running directly on Apple Silicon devices.
+          </p>
+        </div>
+        <a
+          href="/compatibility"
+          class="text-sm font-medium text-zinc-900 hover:text-zinc-600 transition-colors self-start sm:self-auto shrink-0 inline-flex items-center gap-1"
+        >
+          <span>View all reports</span>
+          <ChevronRight size={14} />
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <a href="/compatibility/dead-cells-ios" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
+          <div class="rounded-xl overflow-hidden aspect-[16/9] bg-zinc-900">
+            <img
+              src="/screenshots/games/dead-cells.webp"
+              alt="Dead Cells running on Metaspero"
+              width="640"
+              height="360"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <div>
+              <h3 class="font-semibold text-zinc-900 text-sm group-hover:text-blue-600 transition-colors">Dead Cells</h3>
+              <span class="text-xs text-zinc-500 font-mono">PPSA04130 &middot; 60 FPS</span>
+            </div>
+            <StatusBadge status="In game" />
+          </div>
+        </a>
+
+        <a href="/compatibility/dreaming-sarah" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
+          <div class="rounded-xl overflow-hidden aspect-[16/9] bg-zinc-900">
+            <img
+              src="/screenshots/games/dreaming-sarah.webp"
+              alt="Dreaming Sarah running on Metaspero"
+              width="640"
+              height="360"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <div>
+              <h3 class="font-semibold text-zinc-900 text-sm group-hover:text-blue-600 transition-colors">Dreaming Sarah</h3>
+              <span class="text-xs text-zinc-500 font-mono">PPSA03362 &middot; 60 FPS</span>
+            </div>
+            <StatusBadge status="In game" />
+          </div>
+        </a>
+
+        <a href="/compatibility/xiii" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
+          <div class="rounded-xl overflow-hidden aspect-[16/9] bg-zinc-900">
+            <img
+              src="/screenshots/games/xiii.webp"
+              alt="XIII running on Metaspero"
+              width="640"
+              height="360"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <div>
+              <h3 class="font-semibold text-zinc-900 text-sm group-hover:text-blue-600 transition-colors">XIII</h3>
+              <span class="text-xs text-zinc-500 font-mono">PPSA02187 &middot; 10 FPS</span>
+            </div>
+            <StatusBadge status="In game" />
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- macOS Experience -->
+    <section class="space-y-6">
+      <div class="space-y-2">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">macOS Experience</h2>
+        <p class="text-sm text-zinc-600 max-w-2xl leading-relaxed">
+          Browse your game library and play on desktop with a clean, native Mac app.
+        </p>
+      </div>
+
+      <div class="rounded-2xl overflow-hidden bg-white p-2.5 sm:p-3">
+        <img
+          src="/screenshots/ui/mac-home.webp"
+          alt="Metaspero SwiftUI desktop app on macOS"
+          width="1440"
+          height="900"
+          class="w-full h-auto rounded-xl"
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <!-- Compatibility -->
+    <section class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900">Compatibility</h2>
+          <p class="text-sm text-zinc-600 mt-2 max-w-2xl leading-relaxed">
+            Recent test reports on iOS and macOS. This list is separate from the upstream KytyPS5 list.
+          </p>
+        </div>
+        <a
+          href="/compatibility"
+          class="text-sm font-medium text-zinc-900 hover:text-zinc-600 transition-colors self-start sm:self-auto shrink-0 inline-flex items-center gap-1"
+        >
+          <span>View all reports</span>
+          <ChevronRight size={14} />
+        </a>
+      </div>
+
+      <!-- Segmented Progress Bar & Legend -->
+      <div class="space-y-3 pt-1">
+        <div class="h-3 w-full bg-zinc-200/60 rounded-full overflow-hidden flex">
+          {
+            statusOrder.map((st) => {
+              const count = statusCounts[st] || 0;
+              const pct = totalReports > 0 ? (count / totalReports) * 100 : 0;
+              if (pct === 0) return null;
+              return (
+                <div
+                  style={`width: ${pct}%`}
+                  class={`${STATUS_DEFINITIONS[st].barClass} transition-all`}
+                  title={`${st}: ${count} (${pct.toFixed(0)}%)`}
+                />
+              );
+            })
+          }
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-600">
+          {
+            statusOrder.map((st) => {
+              const count = statusCounts[st] || 0;
+              const def = STATUS_DEFINITIONS[st];
+              return (
+                <div class="flex items-center gap-1.5">
+                  <span class={`w-2 h-2 rounded-full ${def.dotClass}`} />
+                  <span class="font-medium text-zinc-800">{st}</span>
+                  <span class="text-zinc-400">({count})</span>
+                </div>
+              );
+            })
+          }
+        </div>
+      </div>
+
+      <div class="rounded-2xl overflow-hidden bg-white max-w-full">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm min-w-[600px]">
+            <thead class="bg-zinc-50/70 border-b border-zinc-100 text-xs text-zinc-500 font-medium">
+              <tr>
+                <th class="py-3 px-4">Title</th>
+                <th class="py-3 px-4">Title ID</th>
+                <th class="py-3 px-4">Platform</th>
+                <th class="py-3 px-4">Device</th>
+                <th class="py-3 px-4">FPS</th>
+                <th class="py-3 px-4">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100">
+              {
+                allReports.map((report) => (
+                  <tr class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
+                    <td class="py-3.5 px-4 font-medium text-zinc-900">
+                      <a href={`/compatibility/${report.id}`} class="hover:underline">
+                        {report.data.title}
+                      </a>
+                    </td>
+                    <td class="py-3.5 px-4 font-mono text-xs text-zinc-500">{report.data.titleId}</td>
+                    <td class="py-3.5 px-4 text-xs text-zinc-600">{report.data.platform}</td>
+                    <td class="py-3.5 px-4 text-xs text-zinc-600">{report.data.testedDevice}</td>
+                    <td class="py-3.5 px-4 text-xs font-medium text-zinc-800">{report.data.fps}</td>
+                    <td class="py-3.5 px-4">
+                      <StatusBadge status={report.data.status} />
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between text-xs text-zinc-500">
+        <span>Have test results to report?</span>
+        <a href="/report" class="text-zinc-900 font-medium hover:underline inline-flex items-center gap-0.5">
+          <span>Submit a report</span>
+          <ChevronRight size={13} />
+        </a>
+      </div>
+    </section>
+
+    <!-- Compilation Overview -->
+    <section>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-8 sm:mb-10">Compilation</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono text-zinc-500 mb-4">01</div>
+            <h3 class="text-base font-semibold text-zinc-900 mb-2">Compile from Source</h3>
+            <p class="text-sm text-zinc-600 leading-relaxed">
+              Build with CMake presets for iOS (<code class="font-mono text-xs">ios</code>) and native macOS (<code class="font-mono text-xs">macos-swiftui</code>) or in Xcode.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono text-zinc-500 mb-4">02</div>
+            <h3 class="text-base font-semibold text-zinc-900 mb-2">Sideload IPA</h3>
+            <p class="text-sm text-zinc-600 leading-relaxed">
+              Install the compiled or release IPA onto iOS using AltStore, SideStore, or TrollStore.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono text-zinc-500 mb-4">03</div>
+            <h3 class="text-base font-semibold text-zinc-900 mb-2">Enable JIT</h3>
+            <p class="text-sm text-zinc-600 leading-relaxed">
+              Attach the debugger with StikDebug running <code class="font-mono text-xs">universal.js</code> over LocalDevVPN before launching games.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 sm:p-7 flex flex-col justify-between">
+          <div>
+            <div class="text-xs font-mono text-zinc-500 mb-4">04</div>
+            <h3 class="text-base font-semibold text-zinc-900 mb-2">Memory & Files</h3>
+            <p class="text-sm text-zinc-600 leading-relaxed">
+              Increased memory entitlement allows extra RAM allocation. In-app toasts warn if Jetsam limits approach.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8">
+        <a
+          href="/docs/compile"
+          class="text-sm font-medium text-zinc-900 hover:text-zinc-600 transition-colors inline-flex items-center gap-1"
+        >
+          <span>Read Compilation Guide</span>
+          <ChevronRight size={14} />
+        </a>
+      </div>
+    </section>
+
+    <!-- FAQ Preview -->
+    <section>
+      <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 mb-8">FAQ</h2>
+      <div class="space-y-4 max-w-3xl">
+        <div class="border-b border-zinc-200/60 pb-4">
+          <h3 class="text-base font-semibold text-zinc-900">Which operating systems and hardware are supported?</h3>
+          <p class="text-sm text-zinc-600 mt-1 leading-relaxed">
+            iOS 18 to iOS 27 and macOS 26 are supported across Apple Silicon iPhone, Mac, and iPad.
+          </p>
+        </div>
+
+        <div class="border-b border-zinc-200/60 pb-4">
+          <h3 class="text-base font-semibold text-zinc-900">How is JIT activated on iOS?</h3>
+          <p class="text-sm text-zinc-600 mt-1 leading-relaxed">
+            iOS requires StikDebug with the universal.js script running over LocalDevVPN to attach JIT.
+          </p>
+        </div>
+
+        <div class="border-b border-zinc-200/60 pb-4">
+          <h3 class="text-base font-semibold text-zinc-900">Why do larger games need the increased memory entitlement?</h3>
+          <p class="text-sm text-zinc-600 mt-1 leading-relaxed">
+            Some smaller games run without it, but larger games require the increased memory limit entitlement to allocate extra RAM on iOS. The app displays an in-app warning toast if Jetsam memory pressure rises.
+          </p>
+        </div>
+      </div>
+      <div class="mt-8">
+        <a
+          href="/faq"
+          class="text-sm font-medium text-zinc-900 hover:text-zinc-600 transition-colors inline-flex items-center gap-1"
+        >
+          <span>View All Questions</span>
+          <ChevronRight size={14} />
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  /* Hero phone fan layout */
+  .hero-phone-back {
+    transform: translateX(-30px) rotate(-5deg);
+  }
+
+  .hero-phone-front {
+    transform: translateX(30px) rotate(5deg);
+  }
+
+  @media (min-width: 640px) {
+    .hero-phone-back {
+      transform: translateX(-55px) rotate(-6deg);
+    }
+    .hero-phone-front {
+      transform: translateX(55px) rotate(6deg);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-phone-back {
+      transform: translateX(-70px) rotate(-6deg);
+    }
+    .hero-phone-front {
+      transform: translateX(70px) rotate(6deg);
+    }
+  }
+</style>

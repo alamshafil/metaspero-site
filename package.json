@@ -1,0 +1,22 @@
+{
+  "name": "metaspero-site",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "generate:og": "swift scripts/generate-og-image.swift"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource/dm-sans": "^5.1.0",
+    "@lucide/astro": "^1.31.0",
+    "astro": "^7.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.9",
+    "tailwindcss": "^4.0.9"
+  }
+}
