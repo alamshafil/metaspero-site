@@ -20,6 +20,17 @@ import {
 const allReports = await getCollection('compatibility');
 const totalReports = allReports.length;
 
+// iOS first, then newest, then alphabetical
+const platformRank = (platform: string) => (platform === 'iOS' ? 0 : 1);
+const sortedReports = [...allReports].sort(
+  (a, b) =>
+    platformRank(a.data.platform) - platformRank(b.data.platform) ||
+    b.data.dateReported.localeCompare(a.data.dateReported) ||
+    a.data.title.localeCompare(b.data.title),
+);
+const MAX_TABLE_ROWS = 8;
+const tableReports = sortedReports.slice(0, MAX_TABLE_ROWS);
+
 // Counts for "Compatibility at a glance"
 const statusOrder: CompatibilityStatus[] = ['In game', 'Main menu', 'Logo', "Doesn't boot"];
 const statusCounts = statusOrder.reduce((acc, st) => {
@@ -224,13 +235,13 @@ const features = [
           <div class="flex items-center justify-between pt-1">
             <div>
               <h3 class="font-semibold text-zinc-900 text-sm group-hover:text-blue-600 transition-colors">Dead Cells</h3>
-              <span class="text-xs text-zinc-500 font-mono">PPSA04130 &middot; 60 FPS</span>
+              <span class="text-xs text-zinc-500 font-mono">PPSA15552 &middot; 60 FPS</span>
             </div>
             <StatusBadge status="In game" />
           </div>
         </a>
 
-        <a href="/metaspero-site/compatibility/dreaming-sarah" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
+        <a href="/metaspero-site/compatibility/dreaming-sarah-ios" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
           <div class="rounded-xl overflow-hidden aspect-[16/9] bg-zinc-900">
             <img
               src="/metaspero-site/screenshots/games/dreaming-sarah.webp"
@@ -244,13 +255,13 @@ const features = [
           <div class="flex items-center justify-between pt-1">
             <div>
               <h3 class="font-semibold text-zinc-900 text-sm group-hover:text-blue-600 transition-colors">Dreaming Sarah</h3>
-              <span class="text-xs text-zinc-500 font-mono">PPSA03362 &middot; 60 FPS</span>
+              <span class="text-xs text-zinc-500 font-mono">PPSA02929 &middot; 30-60 FPS</span>
             </div>
             <StatusBadge status="In game" />
           </div>
         </a>
 
-        <a href="/metaspero-site/compatibility/xiii" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
+        <a href="/metaspero-site/compatibility/xiii-ios" class="bg-white rounded-2xl overflow-hidden p-4 flex flex-col gap-3 group transition-transform hover:-translate-y-1">
           <div class="rounded-xl overflow-hidden aspect-[16/9] bg-zinc-900">
             <img
               src="/metaspero-site/screenshots/games/xiii.webp"
@@ -264,7 +275,7 @@ const features = [
           <div class="flex items-center justify-between pt-1">
             <div>
               <h3 class="font-semibold text-zinc-900 text-sm group-hover:text-blue-600 transition-colors">XIII</h3>
-              <span class="text-xs text-zinc-500 font-mono">PPSA02187 &middot; 10 FPS</span>
+              <span class="text-xs text-zinc-500 font-mono">PPSA02775 &middot; 10 FPS</span>
             </div>
             <StatusBadge status="In game" />
           </div>
@@ -362,7 +373,7 @@ const features = [
             </thead>
             <tbody class="divide-y divide-zinc-100">
               {
-                allReports.map((report) => (
+                tableReports.map((report) => (
                   <tr class="odd:bg-white even:bg-zinc-50/50 hover:bg-zinc-50 transition-colors">
                     <td class="py-3.5 px-4 font-medium text-zinc-900">
                       <a href={`/metaspero-site/compatibility/${report.id}`} class="hover:underline">

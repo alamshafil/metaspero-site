@@ -4,7 +4,14 @@ import StatusBadge from './StatusBadge.astro';
 import { type CompatibilityStatus, type Platform } from '../types/compatibility';
 import { Search, ChevronRight } from '@lucide/astro';
 
-const reports = await getCollection('compatibility');
+// iOS first, then newest, then alphabetical
+const platformRank = (platform: string) => (platform === 'iOS' ? 0 : 1);
+const reports = (await getCollection('compatibility')).sort(
+  (a, b) =>
+    platformRank(a.data.platform) - platformRank(b.data.platform) ||
+    b.data.dateReported.localeCompare(a.data.dateReported) ||
+    a.data.title.localeCompare(b.data.title),
+);
 const totalReports = reports.length;
 const statuses: CompatibilityStatus[] = ['In game', 'Main menu', 'Logo', "Doesn't boot"];
 const platforms: Platform[] = ['iOS', 'macOS'];
@@ -162,7 +169,11 @@ const platforms: Platform[] = ['iOS', 'macOS'];
     }
   }
 
-  searchInput?.addEventListener('input', filterReports);
+  let debounceTimer: number | undefined;
+  searchInput?.addEventListener('input', () => {
+    window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(filterReports, 150);
+  });
   platformFilter?.addEventListener('change', filterReports);
   statusFilter?.addEventListener('change', filterReports);
 </script>
