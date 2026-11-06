@@ -196,7 +196,9 @@ import GithubIcon from '../components/icons/GithubIcon.astro';
 
         <a
           id="github-submit-link"
-          href={SITE_CONFIG.links.reportIssue}
+          href={`${SITE_CONFIG.links.newIssue}?template=${SITE_CONFIG.links.reportTemplate}`}
+          data-issue-base={SITE_CONFIG.links.newIssue}
+          data-template={SITE_CONFIG.links.reportTemplate}
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center justify-center gap-2 w-full bg-zinc-900 text-white hover:bg-zinc-800 text-sm font-semibold py-3 px-6 rounded-full transition-colors"
@@ -229,6 +231,8 @@ import GithubIcon from '../components/icons/GithubIcon.astro';
   const copyBtn = document.getElementById('copy-report-btn');
   const copyLabel = document.getElementById('copy-label');
   const githubLink = document.getElementById('github-submit-link') as HTMLAnchorElement;
+  const githubIssueBase = githubLink.dataset.issueBase!;
+  const issueTemplate = githubLink.dataset.template!;
 
   function generateMarkdown(): string {
     const title = formTitle.value.trim() || "Astro's Playroom";
@@ -283,10 +287,24 @@ ${summary}`;
     const platform = formPlatform.value || 'iOS';
 
     if (githubLink) {
-      let titleId = formTitleId.value.trim().toUpperCase() || 'PPSA00000';
-      const issueTitle = encodeURIComponent(`[Report] ${title} (${platform} / ${titleId}) - ${formStatus.value}`);
-      const issueBody = encodeURIComponent(md);
-      githubLink.href = `https://github.com/shafilalam/kyty-apple/issues/new?title=${issueTitle}&body=${issueBody}`;
+      const params = new URLSearchParams({
+        template: issueTemplate,
+        title: `[GAME STATUS]: ${title} (${platform})`,
+        'game-title': formTitle.value.trim(),
+        'game-id': formTitleId.value.trim().toUpperCase(),
+        'kyty-version': formVersion?.value.trim() || '',
+        'compatibility-status': formStatus.value,
+        'what-happened': formSummary.value.trim(),
+        os: [formOs.value.trim(), platform].filter(Boolean).join(' / '),
+        'extra-notes': [
+          formDevice.value.trim() && `Device: ${formDevice.value.trim()}`,
+          formFps.value.trim() && `FPS: ${formFps.value.trim()}`,
+          formJit.value.trim() && `JIT: ${formJit.value.trim()}`,
+          formNotes.value.trim(),
+        ].filter(Boolean).join('\n'),
+      });
+      for (const [k, v] of [...params]) if (!v) params.delete(k);
+      githubLink.href = `${githubIssueBase}?${params.toString()}`;
     }
   }
 
